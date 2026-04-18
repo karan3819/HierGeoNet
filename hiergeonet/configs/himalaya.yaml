@@ -1,0 +1,29 @@
+# ============================================================
+# HierGeoNet — Himalayan Terrain Configuration
+# Extends default.yaml with 18-dimensional feature vector
+# (adds slope angle, plan curvature, aspect, rainfall, NDVI,
+#  lithology one-hot, land-cover one-hot — Section VII-C)
+# ============================================================
+
+# Override input dimension only — everything else stays the same
+input:
+  in_dim: 18          # 14 L4S features + 4 Himalayan extras
+  patch_h: 128
+  patch_w: 128
+
+# Himalayan-specific feature configuration
+himalaya_features:
+  slope_angle:    true    # from SRTM/Cartosat DEM
+  plan_curvature: true    # concave slopes concentrate runoff
+  aspect_sincos:  true    # sin(aspect) + cos(aspect) = 2 features
+  rainfall_30d:   true    # NASA-GPM IMERG 30-day cumulative
+  ndvi:           true    # Sentinel-2 composite
+  lithology:             # 7-class one-hot from Bhukosh GSI
+    n_classes: 7
+    enabled: true
+  land_cover:            # 5-class one-hot from MODIS MCD12Q1
+    n_classes: 5
+    enabled: false       # set true once land-cover data is prepared
+
+# All other settings inherited from default.yaml
+# Run as: python scripts/train.py --config configs/himalaya.yaml

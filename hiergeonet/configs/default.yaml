@@ -1,0 +1,62 @@
+# ============================================================
+# HierGeoNet — Default Configuration
+# Matches paper-exact hyperparameters (Table I, Section V-C)
+# ============================================================
+
+# ── Input ─────────────────────────────────────────────────────
+input:
+  in_dim: 14          # 12 Sentinel-2 MS bands + DEM slope + elevation
+  patch_h: 128        # patch height in pixels
+  patch_w: 128        # patch width in pixels
+
+# ── Graph topology ────────────────────────────────────────────
+graph:
+  fine_stride:   1    # 1×1  → 16,384 nodes
+  medium_stride: 3    # 3×3  →  1,849 nodes
+  coarse_stride: 9    # 9×9  →    225 nodes
+  fine_prox:   1.5    # δ_f  — connects 8-neighbours
+  medium_prox: 4.5    # δ_m
+  coarse_prox: 13.5   # δ_c
+
+# ── Model architecture ────────────────────────────────────────
+model:
+  d_fine:   128       # fine-scale embedding dim
+  d_med:    192       # medium-scale embedding dim
+  d_coarse: 256       # coarse-scale embedding dim
+  gat_heads:  4       # multi-head attention heads per GAT layer
+  gat_layers: 2       # GAT layers per scale
+  tf_heads:   8       # Transformer attention heads
+  tf_layers:  3       # Transformer encoder depth
+  ff_dim:   512       # Transformer feed-forward dimension
+  dropout:  0.15
+
+# ── Contrastive regulariser ───────────────────────────────────
+contrastive:
+  lambda:        0.1   # weight of L_C in total loss
+  margin:        2.0   # m in Eq. 16
+  radius_pixels: 5.0   # r — positive pair radius
+
+# ── Training ──────────────────────────────────────────────────
+training:
+  epochs:        300
+  batch_size:    8
+  lr:            5.0e-4
+  weight_decay:  1.0e-4
+  pos_weight:    3.5    # upweight landslide class (58:1 imbalance)
+  grad_clip:     1.0
+  patience:      40     # early stopping patience
+  warmup_epochs: 20     # linear LR warmup before cosine decay
+  min_lr:        1.0e-6 # cosine annealing floor
+  seed:          42
+
+# ── DataLoader ────────────────────────────────────────────────
+dataloader:
+  num_workers: 0      # 0 on Windows/Jupyter; 4 on Linux for speed
+  pin_memory:  true   # auto-disabled on CPU
+
+# ── Paths ─────────────────────────────────────────────────────
+paths:
+  data_dir:  data/
+  model_dir: models/
+  out_dir:   outputs/
+  checkpoint: models/hiergeonet_best.pt
